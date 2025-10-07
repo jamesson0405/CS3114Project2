@@ -75,7 +75,7 @@ public class BST<E extends Comparable<E>> {
         if (rt == null) {
             return new BSTNode<E>(e);
         }
-        if (rt.value().compareTo(e) >= 0) {
+        if (e.compareTo(rt.value()) <= 0) {
             rt.setLeft(inserthelp(rt.left(), e));
         }
         else {
@@ -106,6 +106,7 @@ public class BST<E extends Comparable<E>> {
         str.append(node.value()).append(" ");
         inorder(node.right(), str);
     }
+    
     
     */
 
