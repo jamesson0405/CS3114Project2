@@ -64,10 +64,15 @@ public class BST<E extends Comparable<E>> {
     /**
      * Insert a new value into the BST
      * @param value Value to be inserted
+     * @return true if inserted successfully
      */
-    /**public void insert(E value) {
+    public boolean insert(E value) {
+        if (value == null) {
+            return false;
+        }
         root = inserthelp(root, value);
         nodeCount++;
+        return true;
         
     }
     
@@ -83,7 +88,7 @@ public class BST<E extends Comparable<E>> {
         }
         return rt;
     }
-    */
+    
     
     // ----------------------------------------------------------
     /**
@@ -91,7 +96,7 @@ public class BST<E extends Comparable<E>> {
      * @return String listing of BST elements
      */
     
-    /**public String print() {
+    public String print() {
         StringBuilder str = new StringBuilder();
         inorder(root, str);
         return str.toString();
@@ -108,6 +113,6 @@ public class BST<E extends Comparable<E>> {
     }
     
     
-    */
+    
 
 }
