@@ -20,7 +20,7 @@ public class GISDB implements GIS {
     public static final int DIMENSION = 2;
     
     private BST<City> bst;
-    //private KDTree kd;
+    private KDTree kd;
 
     // ----------------------------------------------------------
     /**
@@ -28,7 +28,7 @@ public class GISDB implements GIS {
      */
     GISDB() {
         bst = new BST<City>();
-        //kd = new KDTree();
+        kd = new KDTree();
     }
 
 
@@ -39,6 +39,7 @@ public class GISDB implements GIS {
      */
     public boolean clear() {
         bst.clear();
+        kd.clear();
         return true;
     }
 
@@ -59,6 +60,12 @@ public class GISDB implements GIS {
         if (x < 0 || y < 0 || x > MAXCOORD || y > MAXCOORD) {
             return false;
         }
+        if (kd.findDuplicate(x,  y)) {
+            return false;
+        }
+        City newCity = new City(name, x, y);
+        bst.insert(newCity);
+        kd.insert(newCity);
         return true;
     }
 
@@ -150,7 +157,7 @@ public class GISDB implements GIS {
      * @return String listing the cities as specified.
      */
     public String debug() {
-        return "";
+        return kd.debug();
     }
 
 
@@ -165,6 +172,6 @@ public class GISDB implements GIS {
      * @return String listing the cities as specified.
      */
     public String print() {
-        return "";
+        return bst.print();
     }
 }

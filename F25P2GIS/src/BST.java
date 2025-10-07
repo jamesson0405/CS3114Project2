@@ -1,7 +1,7 @@
 /**
  * Implementation of the Binary Seach Tree
  * @author Josh Kwen, James Son
- * @version 10/06/2025
+ * @version 10/07/2025
  * 
  * @param <E> type of elements
  */
@@ -16,26 +16,55 @@ public class BST<E extends Comparable<E>> {
         BSTNode<E> right;
         
         BSTNode(E value) {
-            data = value;
-            left = null;
-            right = null;
+            this.data = value;
+            this.left = null;
+            this.right = null;
         }
         
+        /**
+         * Get value stored in node
+         * @return the data of node
+         */
         public E value() {
             return data;
         }
+        
+        /**
+         * Set value of node
+         * @param val new value of node
+         */
         public void setValue(E val) {
             data = val;
         }
+        
+        /**
+         * Get left node
+         * @return left node
+         */
         public BSTNode<E> left() {
             return left;
         }
+        
+        /**
+         * Set left node
+         * @param l new left node
+         */
         public void setLeft(BSTNode<E> l) {
             left = l;
         }
+        
+        /**
+         * Get right node
+         * @return right node
+         */
         public BSTNode<E> right() {
             return right;
         }
+        
+        /**
+         * Set right node
+         * @param r new right node
+         */
         public void setRight(BSTNode<E> r) {
             right = r;
         }
@@ -98,19 +127,27 @@ public class BST<E extends Comparable<E>> {
     
     public String print() {
         StringBuilder str = new StringBuilder();
-        inorder(root, str);
+        printhelp(root, 0, str);
         return str.toString();
         
     }
     
-    private void inorder(BSTNode<E> node, StringBuilder str) {
-        if (node == null) {
+    private void printhelp(BSTNode<E> rt, int level, StringBuilder str) {
+        if (rt == null) {
             return;
         }
-        inorder(node.left(), str);
-        str.append(node.value()).append(" ");
-        inorder(node.right(), str);
+        printhelp(rt.left(), level + 1, str);
+        str.append(level);
+        for (int i = 0; i < level * 2; i++) {
+            str.append(" ");
+        }
+        str.append(rt.value().toString());
+        str.append("\n");
+        printhelp(rt.right(), level + 1, str);
     }
+    
+    // ----------------------------------------------------------
+    
     
     
     

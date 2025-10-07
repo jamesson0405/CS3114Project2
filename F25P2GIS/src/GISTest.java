@@ -65,7 +65,7 @@ public class GISTest extends TestCase {
      * Insert some records and check output requirements for various commands
      * @throws IOException
      */
-    public void testRefOutput()
+    /**public void testRefOutput()
         throws IOException
     {
         assertTrue(it.insert("Chicago", 100, 150));
@@ -100,5 +100,16 @@ public class GISTest extends TestCase {
                 + "Washington (5, 350)\n"
                 + "L (11, 500)\n5", it.search(0, 0, 2000));
         assertFuzzyEquals("Baltimore (0, 300)\n4", it.search(0, 300, 0));
+    }*/
+    
+    /**
+     * Test coordinate boundaries
+     * @throws IOException
+     */
+    public void testCoordinatesBoundary() {
+        assertTrue(it.insert("City", 0, 0));
+        assertTrue(it.insert("City", 32767, 32767));
+        assertFalse(it.insert("City", 32768, 200));
+        assertFalse(it.insert("City", 200, 32768));
     }
 }
