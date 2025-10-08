@@ -148,6 +148,30 @@ public class BST<E extends Comparable<E>> {
     
     // ----------------------------------------------------------
     
+    /**
+     * Get size of BST 
+     * @return number of nodes
+     */
+    /**public int size() {
+        return nodeCount;
+    }*/
+    
+    /**
+     * Check is BST is empty
+     * @return true if tree is empty
+     */
+    /**public boolean isEmpty() {
+        return root == null;
+    }
+    */
+    /**
+     * Get root of BST
+     * @return root of tree
+     */
+    /**public BSTNode<E> getRoot() {
+        return root;
+    }
+    */
     
     
     

@@ -65,9 +65,9 @@ public class KDTree {
          * Check if leaf is a node
          * @return true if node has no child nodes
          */
-        public boolean isLeaf() {
+        /**public boolean isLeaf() {
             return (left == null) && (right == null);
-        }
+        }*/
     }
    
     // ----------------------------------------------------------
@@ -93,9 +93,9 @@ public class KDTree {
      * Check if the tree is empty
      * @return true if empty
      */
-    public boolean isEmpty() {
+    /**public boolean isEmpty() {
         return root == null;
-    }
+    }*/
     // ----------------------------------------------------------
     /**
      * Get root
@@ -113,8 +113,12 @@ public class KDTree {
      * @return true if inserted successfully
      *         false if there are duplicate coordinates
      */
-    public void insert(City city) {
+    public boolean insert(City city) {
+        if (city == null) {
+            return false;
+        }
         root = inserthelp(root, city, 0);
+        return true;
     }
     
     /**
@@ -138,7 +142,7 @@ public class KDTree {
                 rt.setRight(inserthelp(rt.right(), city, level + 1));
             }
         }
-        else if (discriminator == Y_DISCRIMINATOR){
+        else if (discriminator == Y_DISCRIMINATOR) {
             if (city.getY() < rt.getCity().getY()) {
                 rt.setLeft(inserthelp(rt.left(), city, level + 1));
             }

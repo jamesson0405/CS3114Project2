@@ -54,7 +54,7 @@ public class GISDB implements GIS {
      * @return True iff the city is successfully entered into the database
      */
     public boolean insert(String name, int x, int y) {
-        if (name == null || name.isEmpty()) { // for Milestone 1 
+        if (name == null || name.isEmpty()) {  
             return false;
         }
         if (x < 0 || y < 0 || x > MAXCOORD || y > MAXCOORD) {
