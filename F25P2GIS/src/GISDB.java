@@ -4,7 +4,7 @@
  * Bintree to do the work.
  *
  * @author Josh Kwen, James Son
- * @version 10/06/2025
+ * @version 10/09/2025
  *
  */
 public class GISDB implements GIS {
@@ -60,7 +60,7 @@ public class GISDB implements GIS {
         if (x < 0 || y < 0 || x > MAXCOORD || y > MAXCOORD) {
             return false;
         }
-        if (kd.findDuplicate(x,  y)) {
+        if (kd.findDuplicate(x, y)) {
             return false;
         }
         City newCity = new City(name, x, y);
@@ -112,7 +112,11 @@ public class GISDB implements GIS {
      * @return The city name if there is such a city, empty otherwise
      */
     public String info(int x, int y) {
-        return "";
+        City found = kd.findCity(x, y);
+        if (found == null) {
+            return "";
+        }
+        return found.getName();
     }
 
 
@@ -124,7 +128,10 @@ public class GISDB implements GIS {
      *          empty if there are none.
      */
     public String info(String name) {
-        return "";
+        if (name == null || name.isEmpty()) {
+            return "";
+        }
+        return bst.findByName(name);
     }
 
 
@@ -144,7 +151,10 @@ public class GISDB implements GIS {
      *          If k-d tree is empty, the number of nodes visited is zero.
      */
     public String search(int x, int y, int radius) {
-        return "";
+        if (radius < 0) {
+            return "";
+        }
+        return kd.regionSearch(x, y, radius);
     }
 
 

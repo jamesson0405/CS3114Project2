@@ -1,26 +1,29 @@
 /**
- * Implementation of the Binary Seach Tree
+ * Implementation of the Binary Search Tree
  * @author Josh Kwen, James Son
- * @version 10/07/2025
- * 
+ * @version 10/09/2025
+ *
  * @param <E> type of elements
  */
-
 public class BST<E extends Comparable<E>> {
     private BSTNode<E> root; // Root of the BST
-    private int nodeCount; // Number of nodes
-    
+    private int nodeCount;   // Number of nodes
+
     private static class BSTNode<E> {
         E data;
         BSTNode<E> left;
         BSTNode<E> right;
-        
+
+        /**
+         * Constructor for BSTNode
+         * @param value value to store
+         */
         BSTNode(E value) {
             this.data = value;
             this.left = null;
             this.right = null;
         }
-        
+
         /**
          * Get value stored in node
          * @return the data of node
@@ -28,7 +31,7 @@ public class BST<E extends Comparable<E>> {
         public E value() {
             return data;
         }
-        
+
         /**
          * Set value of node
          * @param val new value of node
@@ -36,7 +39,7 @@ public class BST<E extends Comparable<E>> {
         public void setValue(E val) {
             data = val;
         }
-        
+
         /**
          * Get left node
          * @return left node
@@ -44,7 +47,7 @@ public class BST<E extends Comparable<E>> {
         public BSTNode<E> left() {
             return left;
         }
-        
+
         /**
          * Set left node
          * @param l new left node
@@ -52,7 +55,7 @@ public class BST<E extends Comparable<E>> {
         public void setLeft(BSTNode<E> l) {
             left = l;
         }
-        
+
         /**
          * Get right node
          * @return right node
@@ -60,7 +63,7 @@ public class BST<E extends Comparable<E>> {
         public BSTNode<E> right() {
             return right;
         }
-        
+
         /**
          * Set right node
          * @param r new right node
@@ -68,9 +71,8 @@ public class BST<E extends Comparable<E>> {
         public void setRight(BSTNode<E> r) {
             right = r;
         }
-        
     }
-    
+
     // ----------------------------------------------------------
     /**
      * Constructor for empty BST
@@ -79,16 +81,16 @@ public class BST<E extends Comparable<E>> {
         root = null;
         nodeCount = 0;
     }
-    
+
     // ----------------------------------------------------------
     /**
-     * reinitialize the BST
+     * Reinitialize the BST
      */
     public void clear() {
         root = null;
         nodeCount = 0;
     }
-    
+
     // ----------------------------------------------------------
     /**
      * Insert a new value into the BST
@@ -102,9 +104,14 @@ public class BST<E extends Comparable<E>> {
         root = inserthelp(root, value);
         nodeCount++;
         return true;
-        
     }
-    
+
+    /**
+     * Helper method for insert
+     * @param rt current node
+     * @param e element to insert
+     * @return node after insertion
+     */
     private BSTNode<E> inserthelp(BSTNode<E> rt, E e) {
         if (rt == null) {
             return new BSTNode<E>(e);
@@ -117,21 +124,24 @@ public class BST<E extends Comparable<E>> {
         }
         return rt;
     }
-    
-    
+
     // ----------------------------------------------------------
     /**
      * Print a listing of the BST inorder traversal
      * @return String listing of BST elements
      */
-    
     public String print() {
         StringBuilder str = new StringBuilder();
         printhelp(root, 0, str);
         return str.toString();
-        
     }
-    
+
+    /**
+     * Helper method for print
+     * @param rt current node
+     * @param level current level
+     * @param str string builder for output
+     */
     private void printhelp(BSTNode<E> rt, int level, StringBuilder str) {
         if (rt == null) {
             return;
@@ -145,35 +155,71 @@ public class BST<E extends Comparable<E>> {
         str.append("\n");
         printhelp(rt.right(), level + 1, str);
     }
-    
+
     // ----------------------------------------------------------
-    
     /**
-     * Get size of BST 
+     * Get size of BST
      * @return number of nodes
      */
     /**public int size() {
         return nodeCount;
     }*/
-    
+
     /**
-     * Check is BST is empty
+     * Check if BST is empty
      * @return true if tree is empty
      */
     /**public boolean isEmpty() {
         return root == null;
-    }
-    */
+    }*/
+
     /**
      * Get root of BST
      * @return root of tree
      */
     /**public BSTNode<E> getRoot() {
         return root;
-    }
-    */
-    
-    
-    
+    }*/
 
+    // ----------------------------------------------------------
+    /**
+     * Find all elements with matching name (for City objects)
+     * @param name name to search for
+     * @return String with coordinates of all matching cities
+     */
+    public String findByName(String name) {
+        StringBuilder result = new StringBuilder();
+        findByNameHelp(root, name, result);
+        return result.toString();
+    }
+
+    /**
+     * Helper method for findByName
+     * @param rt current node
+     * @param name name to search for
+     * @param result StringBuilder for output
+     */
+    private void findByNameHelp(BSTNode<E> rt, String name, StringBuilder result) {
+        if (rt == null) {
+            return;
+        }
+
+        // Inorder traversal to find all matches
+        findByNameHelp(rt.left(), name, result);
+
+        // Check if current node matches
+        if (rt.value() instanceof City) {
+            City city = (City) rt.value();
+            if (city.getName().equals(name)) {
+                result.append("(");
+                result.append(city.getX());
+                result.append(", ");
+                result.append(city.getY());
+                result.append(")");
+                result.append("\n");
+            }
+        }
+
+        findByNameHelp(rt.right(), name, result);
+    }
 }
