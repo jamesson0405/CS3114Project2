@@ -573,3 +573,430 @@ Delete (100, 100)
 Check info("City") - should still show (200, 200)
 Check info(100, 100) - should be empty
 Does this clarify how the two deletions work together? What part needs more explanation?
+
+Prompt: Act as my TA and help me to get higher mutation coverage for my KD tree implementation of finding the min node /** * Find minimum value in given discriminator of subtree * @param rt Root of the subtree * @param discirminator The discriminator to find min for * @param level Current level of tree * @return node with minimum value */ private KDNode findMin(KDNode rt, int discriminator, int level) { if (rt == null) { return null; } nodesVisited++; int currDiscriminator = level % DIMENSION; if (discriminator == currDiscriminator) { if (rt.left() == null) { return rt; } return findMin(rt.left(), discriminator, level + 1); } else { KDNode leftMin = findMin(rt.left(), discriminator, level + 1); KDNode rightMin = findMin(rt.right(), discriminator, level + 1); return minNode(rt, leftMin, rightMin, discriminator); } } /** * Helper method to find minimum node from root, left, and right subtrees * @param rt Current node * @param temp1 Min from left subtree * @param temp2 Min from right subtree * @param discriminator Discriminator to compare * @return node with minimum value */ private KDNode minNode(KDNode rt, KDNode temp1, KDNode temp2, int discriminator) { KDNode min = rt; int minVal; if (discriminator == X_DISCRIMINATOR) { minVal = rt.getCity().getX(); } else { minVal = rt.getCity().getY(); } if (temp1 != null) { int val1; if (discriminator == X_DISCRIMINATOR) { val1 = temp1.getCity().getX(); } else { val1 = temp1.getCity().getY(); } if (val1 < minVal) { min = temp1; minVal = val1; } } if (temp2 != null) { int val2; if (discriminator == X_DISCRIMINATOR) { val2 = temp2.getCity().getX(); } else { val2 = temp2.getCity().getY(); } if (val2 < minVal) { min = temp2; minVal = val2; } } return min; } do not give me any java code just guide me the steps in depth
+
+Response: Nice — I’ll walk you through, step-by-step and in depth, exactly how to design tests that force every branch in findMin and minNode so mutation testing (Web-CAT) can’t hide surviving mutants. I won’t give Java code — instead you’ll get a precise plan, reasoning, and a checklist of test scenarios (with how to construct the tree and what to assert) so you can implement them inside GISTest (or your local test files and then copy into GISTest).
+
+Quick mental model (important)
+
+findMin(rt, discriminator, level):
+
+If rt == null → returns null.
+
+currDiscriminator = level % DIMENSION (DIMENSION = 2). So parity of level decides whether the current node is split on X (even) or Y (odd).
+
+If discriminator == currDiscriminator → only the left subtree matters:
+
+If rt.left() == null → return rt.
+
+else → recurse only left: findMin(rt.left(), discriminator, level+1).
+
+Else (discriminator != currDiscriminator) → must search both left and right, then pick minNode(rt, leftMin, rightMin, discriminator).
+
+minNode(rt, temp1, temp2, discriminator):
+
+Start with min = rt, minVal = (rt.x if X else rt.y).
+
+If temp1 != null → compare temp1 value to minVal, update.
+
+If temp2 != null → compare temp2 value to minVal, update.
+
+Return chosen node.
+
+Mutations commonly introduced:
+
+Changing comparison operator (< → <=, > → <, etc.)
+
+Dropping or reversing null checks
+
+Using wrong discriminator (X vs Y)
+
+Off-by-one in level increments (level+1)
+
+Returning wrong node (e.g., ignoring temp2)
+
+Your tests must disambiguate all of those.
+
+High-level testing strategy
+
+Force each branch in findMin: rt == null, discriminator == currDiscriminator with rt.left() == null, same with rt.left() != null, and the else case where both left and right are searched.
+
+Force each branch in minNode: temp1 == null, temp2 == null, both non-null with rt smallest, temp1 smallest, temp2 smallest, and ties (equal values). Also test both discriminators (X and Y).
+
+Use tree shapes that guarantee the above conditions — build small, targeted trees rather than big random trees.
+
+Assert precise identity (not just non-null): check the returned node’s city name and coordinate that uniquely identifies it. That reveals operator flips easily.
+
+Exercise level parity carefully — you must create nodes at known levels (root level 0, child level 1, grandchild level 2, etc.) so you know at which nodes the discriminator equals X or Y.
+
+Prefer tests that call public it.insert(...) and it.delete(...)/it.info(...) where possible (so tests are Web-CAT friendly). If you cannot reach findMin except internally (e.g., only used by delete), craft deletes that cause the code path to call findMin. If you can access findMin directly (test hook), use that for more direct checks.
+
+How to construct trees to reach specific branches
+
+Remember: insertion order determines the kd-tree shape and thus node levels.
+
+Root is level 0 (even) → current discriminator = X.
+
+Root’s children are level 1 (odd) → current discriminator = Y.
+
+Grandchildren are level 2 (even) → discriminator = X, etc.
+
+So to force findMin(rt, discriminator, level) into the discriminator == currDiscriminator branch:
+
+Call with discriminator equal to level % 2 of your rt.
+
+For example, call findMin(root, X, 0) (root level 0) → discriminator == currDiscriminator for X.
+
+If root.left() == null you get the return rt path.
+
+If root.left() != null you follow findMin(rt.left(), ...) path.
+
+To force the else branch (search both children):
+
+Choose an rt at a level whose parity does not match the discriminator.
+
+e.g., findMin(nodeAtLevel0, Y, 0) → Y != X so it searches both left and right.
+
+So plan insertions so nodes you want to test are at levels 0, 1, 2 as needed. Example pattern:
+
+Insert root A at (xA, yA).
+
+Insert B that becomes left child (level 1) or right child depending on coordinates — choose coordinates to direct comparisons.
+
+(Implementation detail: to place nodes at a particular side, choose coordinates comparing appropriate X or Y at the correct level.)
+
+Detailed test scenarios (checklist) — implement all of these
+
+Label each test so it’s easy to find failing mutants.
+
+1) rt == null
+
+Goal: exercise early null return.
+
+How to build: call findMin(null, X, 0) (or trigger a delete that calls findMin with a null subtree).
+
+Assert: result is null.
+
+Why this kills mutants: catches any change that removes/changes the if (rt == null) guard.
+
+2) discriminator == currDiscriminator and rt.left() == null → return rt
+
+Goal: hit the branch where we only need left but there is no left child.
+
+How to build: choose rt at some level L where L % 2 == discriminator. Make sure rt.left() is null. The simplest is root at level 0 and discriminator = X, and tree where root has no left.
+
+Assert: returned node equals rt (check name and coords).
+
+Why this kills mutants: catches logic that wrongly traverses right or miscomputes parity.
+
+3) discriminator == currDiscriminator and rt.left() != null → recursive left-only call
+
+Goal: force return findMin(rt.left(), ...).
+
+How to build: rt at level with parity equal to discriminator, and rt.left() exists. The left child should have a left chain that will eventually lead to a node that is returned (i.e., leftmost).
+
+Assert: returned node equals the leftmost node you expect.
+
+Why this kills mutants: catches errors in the recursive left-only path or wrong level+1 handling (if level increment is wrong, parity flips and might search wrong subtree).
+
+4) discriminator != currDiscriminator → recursively search both sides; temp1 == null, temp2 == null combinations
+
+Goal: cover the else branch variations in findMin.
+
+Subcases:
+
+a) Both children null → leftMin & rightMin are both null → minNode(rt, null, null, disc) should return rt.
+
+b) One child returns non-null, the other null → minNode should pick between rt and the non-null child depending on values.
+
+c) Both children return non-null → minNode compares three nodes.
+
+How to build:
+
+For a): root rt with both children null, but call with discriminator not matching rt parity.
+
+For b): rt with only left or only right subtree populated where leftMin or rightMin will be non-null.
+
+For c): both subtrees non-null and produce candidate minima.
+
+Assert: For each subcase assert exact node chosen.
+
+5) minNode result permutations (most important)
+
+Design tests specifically targeting minNode(rt, temp1, temp2, discriminator) behavior. You need to show:
+
+rt is smallest → minNode returns rt.
+
+temp1 is smallest → minNode returns temp1.
+
+temp2 is smallest → minNode returns temp2.
+
+Tie cases: temp1 or temp2 equal to minVal → ensure deterministic behavior (your code uses <, so tie should prefer current min). Test ties to detect if someone changes < to <=.
+
+Do all of the above for both discriminators (X_DISCRIMINATOR and Y_DISCRIMINATOR).
+
+How to build specific examples:
+
+Choose three nodes with distinct X values and same Y (test X discriminator). Place them so they get passed as rt, temp1, temp2.
+
+For Y discriminator, choose nodes differing in Y while Xs can be arbitrary.
+
+Assert exact city identity (name + coords).
+
+6) Edge cases: negative coordinates, zero, large values
+
+Why: catches integer-related mutations or sign mishandling.
+
+What to do: include nodes with negative X/Y, zero, and near Integer.MAX_VALUE/MIN_VALUE if you want extreme robustness.
+
+Assert: expected min is still correctly chosen.
+
+7) Duplicate coordinate values (same X or same Y across nodes)
+
+Why: forces tie behavior and ensures minNode doesn’t pick wrong node when values equal.
+
+What to do: create nodes where rt and temp1 have same X (when testing X discriminator) but different Y. Assert tie-handling outcome.
+
+8) Level/parity sensitive tests
+
+Goal: verify that level+1 is used correctly (a common mutant is using the wrong level increment).
+
+How to build: create a small tree where the expected min depends on the parity at deeper level:
+
+e.g., root (L0) splits on X; left child (L1) splits on Y; its left child (L2) splits on X — arranging nodes so min should come from grandchild only if parity/level increment is correct.
+
+Assert: expected node is chosen — if level handling is wrong, the wrong subtree will be searched.
+
+9) Integration tests via delete (if findMin is only called by delete)
+
+If your findMin is used exclusively inside delete to find replacement nodes when deleting a node with two children, design deletion sequences that force findMin to be invoked:
+
+Delete a node with two non-null children so algorithm calls findMin(rightSubtree, discriminator, level+1) (or left if your code does that).
+
+Arrange the right subtree so the min is in:
+
+the immediate right child (left null), or
+
+deeper left chain (left non-null), or
+
+both subtrees non-null scenario.
+
+After delete, assert the node at the deleted coordinates was replaced by the correct city (the one findMin should have returned) and that the removed city was returned by delete.
+
+These integration tests are extremely valuable: they exercise findMin under realistic conditions Web-CAT will see.
+
+How to implement these tests within GISTest (practical hints)
+
+Use it.insert(name,x,y) in the right order to create the tree shapes you need. Think through kd insertion comparisons at each level (X at even levels, Y at odd) to place nodes at left/right correctly.
+
+For direct testing of minNode or findMin you can:
+
+If you cannot call them directly, create delete or other sequences that guarantee findMin is invoked.
+
+If you can add a package-private test hook or method in GISDB for testing (ask your instructor policy), use it to call findMin directly for precise assertions.
+
+Always assert the exact identity of the returned city (name + coords) — not just non-null.
+
+Write short, focused tests (one logical assertion per test) so mutation test failures point clearly to the mutant.
+
+Examples of targeted tree shapes (conceptual, no code)
+
+Left-only chain (to test left recursion and left-null returns)
+
+Root A (level 0)
+
+A.left → B (level 1)
+
+B.left → C (level 2)
+
+Call findMin with discriminator matching level 0 or 2 as needed to force left recursion.
+
+Right subtree with left chain (typical for delete replacement)
+
+Root A
+
+A.right → R
+
+R.left → RL
+
+R.left.left → RLL
+
+Call findMin(R, X, levelOfR) or cause delete(A) to trigger findMin on A.right so that findMin must traverse into R.left chain and choose RLL.
+
+Both children contain candidates
+
+Root A with left subtree containing a small X and right subtree containing even smaller X → ensures minNode chooses right subtree’s candidate.
+
+Mutation-driven assertions (what to assert to detect common mutants)
+
+If you expect temp1 to be selected because val1 < minVal, assert exact identity; a mutant changing <→<= could still pass if ties exist — so also add a tie test to ensure tie behavior is stable.
+
+To detect incorrect parity handling, assert that findMin called on a node returns a value only possible if the code respected level % 2.
+
+To detect incorrect null checks, include tests where temp1 == null and temp2 != null (and vice versa) and assert the non-null wins if it has smaller value.
+
+Test priority (order to implement)
+
+rt == null test.
+
+discriminator == currDiscriminator, rt.left() == null and rt.left() != null tests.
+
+discriminator != currDiscriminator with both children null test.
+
+minNode permutations: rt smallest, temp1 smallest, temp2 smallest.
+
+Tie tests for minNode.
+
+Parity/level correctness tests (deeper tree).
+
+Integration delete tests that cause findMin calls in realistic flows.
+
+Edge cases (negative / large coords).
+
+Implement these in GISTest so Web-CAT runs them. If some findMin behavior is only reachable via private methods, either use a controlled delete that triggers it or add a small test-only accessor/delegate in GISDB (check policy).
+
+Debugging tips when a test fails unexpectedly
+
+Print the tree structure (or use small diagnostic info() calls) to confirm node levels and left/right relationships. Often an insertion order placed nodes where you didn’t expect.
+
+If a test fails only when you run mutation testing but passes normally, inspect the mutated operator and craft a test that would be sensitive to that exact mutation (ties and ordering comparisons are especially useful).
+
+If minNode returns an unexpected node, enumerate values (rt, temp1, temp2) in a debug assertion to see which value is being compared.
+
+Final checklist you can copy into GISTest (implementation roadmap)
+
+ Test findMin(null, ...) → expect null.
+
+ Test findMin(rt, disc, level) where disc == currDiscriminator & rt.left()==null → expect rt.
+
+ Test findMin(rt, disc, level) where disc == currDiscriminator & rt.left()!=null → expect leftmost node.
+
+ Test findMin(rt, disc, level) where disc != currDiscriminator and both children null → expect rt.
+
+ Test findMin where leftMin != null, rightMin == null and value comparisons exercise minNode between rt and leftMin.
+
+ Test findMin where leftMin != null, rightMin != null → minNode should return correct of three.
+
+ Test minNode separately for all three winner permutations for both X and Y discriminator.
+
+ Test tie behavior (equal values) to detect < vs <= mutants.
+
+ Tests that rely on delete to force findMin (delete node with two children) to exercise real replacement semantics.
+
+ Edge cases with negative/zero/large coordinates.
+
+ Parity/level test to catch level+1 mistakes.
+
+If you want, I can next:
+
+Translate any of the above tests into exact insertion orders and concrete coordinate values (so you can paste them into GISTest) — or
+
+Help you craft the minimal delete sequences that guarantee findMin is invoked in each desired way.
+
+Tell me which one you want (no code unless you ask for it) and I’ll produce a concrete insertion/delete plan you can copy into your tests.
+
+Prompt: Act as my TA and help me with understanding these failing reference tests testRefGoodDups Error in print after BST inserts testRefDeleteFiveBST Incorrect deletion output testRefDeleteFiveBSTHarder Incorrect deletion output testRefDeleteFiveKD Incorrect deletion output testRefDeleteDups Error in print after BST inserts testRefDeleteDups2 Error in print after BST inserts testRefDeleteDups3 Error in print after BST inserts testRefSearcFiveEasy Incorrect search output testRefRemoveStressBST Incorrect deletion output testRefSearch Incorrect search output im getting these from my webcat submission on reference tests
+
+Response: Got it—these errors from WebCAT are all reference test failures, which usually mean your implementation is producing the wrong behavior in either insertion, deletion, search, or print. Let’s break it down systematically.
+
+Based on your error list:
+
+1️⃣ testRefGoodDups / testRefDeleteDups / testRefDeleteDups2 / testRefDeleteDups3
+
+Symptoms: “Error in print after BST inserts”
+Likely causes:
+
+Your BST/KD tree isn’t handling duplicate values correctly.
+
+Maybe your insert method allows duplicates but your print (or traversal) isn’t showing them correctly, or your delete method removes the wrong one.
+
+In KD trees, this could be an issue with splitting by dimensions when duplicates exist.
+
+Check:
+
+Does insert allow duplicate values? How do you define “equal” nodes?
+
+Does your print traverse the tree correctly after inserting duplicates? (Inorder for BST, level-order for KD tree if needed)
+
+For delete, ensure only one occurrence is deleted if duplicates exist.
+
+2️⃣ testRefDeleteFiveBST / testRefDeleteFiveBSTHarder / testRefRemoveStressBST
+
+Symptoms: “Incorrect deletion output”
+Likely causes:
+
+Deleting nodes with:
+
+Two children → make sure you replace with inorder successor (or predecessor) correctly.
+
+Leaf nodes → check nulling of parent pointers.
+
+Root node → ensure root is updated correctly.
+
+In KD tree (testRefDeleteFiveKD), deleting nodes requires handling the correct dimension split and finding replacement from subtree, which is more subtle than BST deletion.
+
+Check:
+
+Walk through your deletion logic step by step:
+
+Leaf node → remove directly.
+
+Node with one child → replace with child.
+
+Node with two children → replace with inorder successor (BST) or proper KD replacement (KD tree).
+
+3️⃣ testRefSearcFiveEasy / testRefSearch
+
+Symptoms: “Incorrect search output”
+Likely causes:
+
+Your search method may:
+
+Not traverse the tree correctly.
+
+Compare using wrong dimension in KD tree.
+
+Return wrong data when duplicates exist.
+
+Check:
+
+Ensure BST search uses compareTo correctly.
+
+Ensure KD tree search checks the splitting dimension at each level.
+
+Make sure your info() or find() method returns exactly what the test expects.
+
+✅ General debugging steps
+
+Print the tree after each insert/delete manually and compare with expected structure.
+
+Check duplicates handling for both insert and delete.
+
+Test deletion edge cases:
+
+Deleting leaf
+
+Deleting root
+
+Deleting node with one child
+
+Deleting node with two children
+
+Deleting duplicates
+
+Check your print/traversal function: ensure it visits nodes in the order WebCAT expects.
+
+Add small local unit tests for:
+
+BST insert → print
+
+BST delete → print
+
+KD tree insert/search/delete → print
+
+If you want, I can write a step-by-step checklist for BST + KD tree insertion, deletion, and printing, specifically tuned to avoid these WebCAT reference test errors. It’ll basically act as a “debug roadmap.”
+
+Do you want me to do that?
+
+Prompt: 

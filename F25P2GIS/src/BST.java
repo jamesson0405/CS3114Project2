@@ -199,7 +199,8 @@ public class BST<E extends Comparable<E>> {
      * @param name name to search for
      * @param result StringBuilder for output
      */
-    private void findByNameHelp(BSTNode<E> rt, String name, StringBuilder result) {
+    private void findByNameHelp(BSTNode<E> rt, 
+        String name, StringBuilder result) {
         if (rt == null) {
             return;
         }
@@ -221,6 +222,44 @@ public class BST<E extends Comparable<E>> {
         }
 
         findByNameHelp(rt.right(), name, result);
+    }
+    
+    /**
+     * Find first city with matching name
+     * @param name name to search for
+     * @return first matching City, or null
+     */
+    public City findFirstCityByName(String name) {
+        return findFirstCityByNameHelper(root, name);
+    }
+
+    /**
+     * Helper to find first city by name (inorder traversal)
+     * @param rt current node
+     * @param name name to search for
+     * @return first matching City
+     */
+    private City findFirstCityByNameHelper(BSTNode<E> rt, String name) {
+        if (rt == null) {
+            return null;
+        }
+        
+        // Inorder traversal - check left first
+        City leftResult = findFirstCityByNameHelper(rt.left(), name);
+        if (leftResult != null) {
+            return leftResult;
+        }
+        
+        // Check current node
+        if (rt.value() instanceof City) {
+            City city = (City) rt.value();
+            if (city.getName().equals(name)) {
+                return city;
+            }
+        }
+        
+        // Check right subtree
+        return findFirstCityByNameHelper(rt.right(), name);
     }
     
     /**
@@ -248,30 +287,23 @@ public class BST<E extends Comparable<E>> {
             return null;
         }
         int comp = element.compareTo(rt.value());
-        if (comp == 0) {
-            nodeCount--;
-            if (rt.left() == null && rt.right() == null) {
-                return null;
-            }
-            else if (rt.left() == null) {
-                return rt.right();
-            }
-            else if (rt.right() == null) {
-                return rt.left();
-            }
-            else {
-                BSTNode<E> max = findMax(rt.left());
-                rt.setValue(max.value());
-                rt.setLeft(deleteHelper(rt.left(), max.value()));
-                nodeCount++;
-            }
-            return rt;
-        }
-        else if (comp < 0) {
+        if (comp < 0) {
             rt.setLeft(deleteHelper(rt.left(), element));
         }
-        else {
+        else if (comp > 0) {
             rt.setRight(deleteHelper(rt.right(), element));
+        }
+        else {
+            nodeCount--;
+            if (rt.left() == null) {
+                return rt.right();
+            }
+            if (rt.right() == null) {
+                return rt.left();
+            }
+            BSTNode<E> max = findMax(rt.left());
+            rt.setValue(max.value());
+            rt.setLeft(deleteHelper(rt.left(), max.value()));
         }
         return rt;
 

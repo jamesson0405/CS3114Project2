@@ -3,7 +3,7 @@ import student.TestCase;
 
 /**
  * @author Josh Kwen, James Son
- * @version 10/14/2025
+ * @version 10/15/2025
  */
 public class GISTest extends TestCase {
 
@@ -47,6 +47,7 @@ public class GISTest extends TestCase {
         assertFalse(it.insert("CityName", 100000, 5));
         assertFalse(it.insert("CityName", 5, 100000));
         assertFuzzyEquals("", it.search(-1, -1, -1));
+        assertFalse(it.insert(null, 20, 20));
     }
 
     /**
@@ -68,7 +69,8 @@ public class GISTest extends TestCase {
         assertTrue(it.insert("Blacksburg", 100, 100));
         assertTrue(it.insert("Blacksburg", 200, 200));
         assertTrue(it.insert("Blacksburg", 90, 90));
-        assertFuzzyEquals("2 Blacksburg (90, 90)\n1 Blacksburg (200, 200)\n0Blacksburg (100, 100)\n", it.print());
+        assertFuzzyEquals("1  Blacksburg (90, 90)\n0Blacksburg (100, 100)\n"
+            + "1  Blacksburg (200, 200)\n", it.print());
     }
 
     /**
@@ -98,7 +100,8 @@ public class GISTest extends TestCase {
         assertTrue(it.insert("CityA", 100, 100));
         assertTrue(it.insert("CityB", 99, 101));
         assertTrue(it.insert("CityC", 101, 99));
-        assertFuzzyEquals("1 CityB (99, 101)\n0CityA (100, 100)\n1 CityC (101, 99)\n", it.debug());
+        assertFuzzyEquals("1 CityB (99, 101)\n0CityA "
+            + "(100, 100)\n1 CityC (101, 99)\n", it.debug());
     }
 
     /**
@@ -110,7 +113,8 @@ public class GISTest extends TestCase {
         assertTrue(it.insert("CityB", 100, 200));
         assertTrue(it.insert("CityC", 50, 100));
         assertTrue(it.insert("CityD", 150, 400));
-        assertFuzzyEquals("2 CityC (50, 100)\n1 CityB (100, 200)\n2 CityD (150, 400)\n0CityA (200, 200)\n", it.debug());
+        assertFuzzyEquals("2 CityC (50, 100)\n1 CityB (100, 200)\n2 CityD "
+            + "(150, 400)\n0CityA (200, 200)\n", it.debug());
     }
 
     /**
@@ -741,23 +745,30 @@ public class GISTest extends TestCase {
     }
 
     /**
-     * For duplicate names, output includes the name each line; check order case-insensitively (ascending)
+     * For duplicate names, output includes the name each line; 
+     * check order case-insensitively (ascending)
      * @throws IOException
      */
-    public void testInfoOrderForDuplicateNamesReverseInsertion() throws IOException {
+    public void testInfoOrderForDuplicateNamesReverseInsertion() 
+        throws IOException 
+    {
         assertTrue(it.insert("Alpha", 10, 10));
         assertTrue(it.insert("Alpha", 20, 20));
         assertTrue(it.insert("Alpha", 30, 30));
         String info = it.info("Alpha").toLowerCase();
-        //assertTrue(info.indexOf("alpha (10, 10)") < info.indexOf("alpha (20, 20)"));
-        //assertTrue(info.indexOf("alpha (20, 20)") < info.indexOf("alpha (30, 30)"));
+        //assertTrue(info.indexOf("alpha (10, 10)") < 
+            //info.indexOf("alpha (20, 20)"));
+        //assertTrue(info.indexOf("alpha (20, 20)") < 
+            //info.indexOf("alpha (30, 30)"));
     }
 
     /**
      * Boundary-exclusive radius behavior
      * @throws IOException
      */
-    public void testRegionSearchExactlyOnBoundary() throws IOException {
+    public void testRegionSearchExactlyOnBoundary() 
+        throws IOException 
+    {
         assertTrue(it.insert("C0", 0, 0));
         assertTrue(it.insert("C1", 3, 4));
         String out = it.search(0, 0, 5);
@@ -941,7 +952,8 @@ public class GISTest extends TestCase {
         assertFalse(r99.contains("L") || r99.contains("R"));
 
         String r101 = it.search(1000, 1000, 101);
-        assertTrue(r101.contains("C") && r101.contains("L") && r101.contains("R"));
+        assertTrue(r101.contains("C") && r101.contains("L") 
+            && r101.contains("R"));
     }
 
     /**
@@ -1125,7 +1137,9 @@ public class GISTest extends TestCase {
      * GISDB coordinate boundary validation
      * @throws IOException
      */
-    public void testGISDBCoordinateBoundaryValidation() throws IOException {
+    public void testGISDBCoordinateBoundaryValidation() 
+        throws IOException 
+    {
         assertFalse(it.insert("Bad1", -1, 100));
         assertFalse(it.insert("Bad2", 100, -1));
         assertFalse(it.insert("Bad3", 32768, 100));
@@ -1142,7 +1156,8 @@ public class GISTest extends TestCase {
     }
 
     /**
-     * GISDB search validates arguments then searches KD tree (no node-count dependency)
+     * GISDB search validates arguments then searches KD tree 
+     * (no node-count dependency)
      * @throws IOException
      */
     public void testGISDBSearchValidation() throws IOException {
@@ -1595,4 +1610,140 @@ public class GISTest extends TestCase {
         assertFuzzyEquals("CityD", it.info(650, 550));
         assertFuzzyEquals("CityE", it.info(750, 450));
     }
+    
+    /**
+     * Test deleting node with two children then delete by name
+     * @throws IOException
+     */
+    public void testDeleteTwoChildrenThenDeleteByName() throws IOException {
+        it.insert("CityA", 500, 500);
+        it.insert("CityB", 300, 300);
+        it.insert("CityC", 700, 700);
+        it.insert("CityD", 400, 400);
+        it.insert("CityD", 600, 600);
+        it.delete(500, 500);
+        assertFalse(it.delete("CityD").isEmpty());
+        assertFuzzyEquals("", it.info("CityD"));
+        assertFuzzyEquals("", it.info(400, 400));
+        assertFuzzyEquals("", it.info(600, 600));
+    }
+
+    /**
+     * Test multiple deletes with two children
+     * @throws IOException
+     */
+    public void testMultipleTwoChildDeletes() throws IOException {
+        it.insert("CityA", 500, 500);
+        it.insert("CityB", 300, 300);
+        it.insert("CityC", 700, 700);
+        it.insert("CityD", 200, 200);
+        it.insert("CityE", 400, 400);
+        it.insert("CityF", 600, 600);
+        it.insert("CityG", 800, 800);
+        it.delete(300, 300);
+        it.delete(700, 700);
+        it.delete(500, 500);
+        assertFuzzyEquals("CityD", it.info(200, 200));
+        assertFuzzyEquals("CityE", it.info(400, 400));
+        assertFuzzyEquals("CityF", it.info(600, 600));
+        assertFuzzyEquals("CityG", it.info(800, 800));
+        it.delete("CityD");
+        assertFuzzyEquals("", it.info("CityD"));
+    }
+
+    /**
+     * Test delete two children then insert
+     * @throws IOException
+     */
+    public void testDeleteTwoChildrenThenInsert() throws IOException {
+        it.insert("CityA", 500, 500);
+        it.insert("CityB", 300, 300);
+        it.insert("CityC", 700, 700);
+        it.insert("CityD", 200, 200);
+        it.insert("CityE", 400, 400);
+        it.delete(500, 500);
+        it.insert("NewCityA", 350, 350);
+        it.insert("NewCityB", 450, 450);
+        it.insert("NewCityC", 550, 550);
+        assertFuzzyEquals("NewCityA", it.info(350, 350));
+        assertFuzzyEquals("NewCityB", it.info(450, 450));
+        assertFuzzyEquals("NewCityC", it.info(550, 550));
+        assertFuzzyEquals("CityB", it.info(300, 300));
+        assertFuzzyEquals("CityC", it.info(700, 700));
+    }
+
+    /**
+     * Test delete two children then delete all by name
+     * @throws IOException
+     */
+    public void testDeleteTwoChildrenThenDeleteAllByName() throws IOException {
+        it.insert("CityName", 500, 500);
+        it.insert("CityName", 300, 300);
+        it.insert("CityName", 700, 700);
+        it.insert("CityName", 200, 200); 
+        it.insert("CityName", 400, 400); 
+        it.delete(500, 500);
+        // Check that the other four cities were deleted
+        String result = it.delete("CityName");
+        String[] str = result.split("\n");
+        assertEquals(4, str.length);
+        assertFuzzyEquals("", it.info("CityName"));
+    }
+
+    /**
+     * Test chain of two-child deletions
+     * @throws IOException
+     */
+    public void testChainTwoChildDeletions() throws IOException {
+        it.insert("CityA", 800, 800);
+        it.insert("CityB", 400, 400);
+        it.insert("CityC", 1200, 1200);
+        it.insert("CityD", 200, 200);
+        it.insert("CityE", 600, 600);
+        it.insert("CityF", 1000, 1000);
+        it.insert("CityG", 1400, 1400);
+        it.insert("CityH", 100, 100);
+        it.insert("CityI", 300, 300);
+        it.delete(400, 400);
+        it.delete(800, 800);
+        it.insert("CityJ", 450, 450);
+        assertFuzzyEquals("CityJ", it.info(450, 450));
+        it.delete("CityD");
+        assertFuzzyEquals("", it.info("CityD"));
+        assertFuzzyEquals("CityH", it.info(100, 100));
+        assertFuzzyEquals("CityI", it.info(300, 300));
+    }
+
+    /**
+     * Test delete two children then search all remaining
+     * @throws IOException
+     */
+    public void testDeleteTwoChildrenSearchAll() throws IOException {
+        it.insert("CityA", 500, 500); 
+        it.insert("CityB", 300, 300); 
+        it.insert("CityC", 700, 700);
+        it.insert("CityD", 100, 100);
+        it.insert("CityE", 400, 400);
+        it.insert("CityF", 600, 600);
+        it.insert("CityG", 900, 900);
+        it.delete(500, 500);
+        assertFuzzyEquals("CityB", it.info(300, 300));
+        assertFuzzyEquals("CityC", it.info(700, 700));
+        assertFuzzyEquals("CityD", it.info(100, 100));
+        assertFuzzyEquals("CityE", it.info(400, 400));
+        assertFuzzyEquals("CityF", it.info(600, 600));
+        assertFuzzyEquals("CityG", it.info(900, 900));
+        it.delete("CityD");
+        it.delete("CityE");
+        it.delete("CityF");
+        assertFuzzyEquals("CityB", it.info(300, 300));
+        assertFuzzyEquals("CityC", it.info(700, 700));
+        assertFuzzyEquals("CityG", it.info(900, 900));
+    }
+    
+    
+    
+    
+    
+    
 }

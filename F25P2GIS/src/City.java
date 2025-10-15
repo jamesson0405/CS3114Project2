@@ -1,3 +1,5 @@
+import javax.print.attribute.standard.MediaSize.Other;
+
 /**
  * City class to store the data for a city record
  * @author Josh Kwen, James Son
@@ -51,14 +53,21 @@ public class City implements Comparable<City> {
      */
     @Override
     public int compareTo(City o) {
-        return this.name.compareTo(o.name);
+        int nameCompare = this.name.compareTo(o.name);
+        if (nameCompare != 0) {
+            return nameCompare;
+        }
+        if (this.x != o.x) {
+            return this.x - o.x;
+        }
+        return this.y - o.y;
     }
     
     /**
      * return string representation of city and coordinates
      */
     @Override
-    public String toString() { // For milestone 1
+    public String toString() { 
         return name + " (" + x + ", " + y + ")";
     }
     

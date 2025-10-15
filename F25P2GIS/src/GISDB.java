@@ -54,7 +54,7 @@ public class GISDB implements GIS {
      * @return True iff the city is successfully entered into the database
      */
     public boolean insert(String name, int x, int y) {
-        if (name == null || name.isEmpty()) {  
+        if (name == null) {
             return false;
         }
         if (x < 0 || y < 0 || x > MAXCOORD || y > MAXCOORD) {
@@ -86,7 +86,7 @@ public class GISDB implements GIS {
         City deletedCity = kd.delete(x,  y);
         int nodesVisited = kd.getNodesVisited();
         if (deletedCity == null) {
-            return nodesVisited + "\n";
+            return "" + nodesVisited;
         }
         bst.delete(deletedCity);
         return nodesVisited + "\n" + deletedCity.getName();
@@ -107,17 +107,19 @@ public class GISDB implements GIS {
      */
     public String delete(String name) {
         StringBuilder str = new StringBuilder();
-        City searchCity = new City(name, 0, 0);
         while (true) {
-            City city = (City) bst.findAndDeleteFirstElement(searchCity);
+            City city = bst.findFirstCityByName(name);
             if (city == null) {
                 break;
             }
             if (str.length() > 0) {
                 str.append("\n");
             }
-            str.append(city.getX()).append(" ").append(city.getY());
+            str.append("(").append(city.getX()).append(", ").append(
+                city.getY()).append(")");
+            bst.delete(city);
             kd.delete(city.getX(), city.getY());
+            
         }
         return str.toString();
     }
