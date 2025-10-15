@@ -1,7 +1,7 @@
 /**
  * Implementation of the Binary Search Tree
  * @author Josh Kwen, James Son
- * @version 10/09/2025
+ * @version 10/14/2025
  *
  * @param <E> type of elements
  */
@@ -222,4 +222,111 @@ public class BST<E extends Comparable<E>> {
 
         findByNameHelp(rt.right(), name, result);
     }
+    
+    /**
+     * Delete element from the BST
+     * @param element Element to be deleted
+     * @return true if deleted, false otherwise
+     */
+    public boolean delete(E element) {
+        if (element == null) {
+            return false;
+        }
+        int currSize = nodeCount;
+        root = deleteHelper(root, element);
+        return nodeCount < currSize;
+    }
+    
+    /**
+     * Helper method for deletion
+     * @param rt Current node
+     * @param element Element to delete
+     * @return the modified BST
+     */
+    private BSTNode<E> deleteHelper(BSTNode<E> rt, E element) {
+        if (rt == null) {
+            return null;
+        }
+        int comp = element.compareTo(rt.value());
+        if (comp == 0) {
+            nodeCount--;
+            if (rt.left() == null && rt.right() == null) {
+                return null;
+            }
+            else if (rt.left() == null) {
+                return rt.right();
+            }
+            else if (rt.right() == null) {
+                return rt.left();
+            }
+            else {
+                BSTNode<E> max = findMax(rt.left());
+                rt.setValue(max.value());
+                rt.setLeft(deleteHelper(rt.left(), max.value()));
+                nodeCount++;
+            }
+            return rt;
+        }
+        else if (comp < 0) {
+            rt.setLeft(deleteHelper(rt.left(), element));
+        }
+        else {
+            rt.setRight(deleteHelper(rt.right(), element));
+        }
+        return rt;
+
+    }
+    
+    /**
+     * Find and delete the first matching element using preorder
+     * @param element Element to match for
+     * @return deleted element
+     */
+    public E findAndDeleteFirstElement(E element) {
+        if (root == null || element == null) {
+            return null;
+        }
+        E found = findFirstMatchingElement(root, element);
+        if (found == null) {
+            return null;
+        }
+        delete(found);
+        return found;
+    }
+    
+    /**
+     * Helper to find first matching element
+     * @param rt Current node
+     * @param element Element to match for
+     * @return first matching element
+     */
+    private E findFirstMatchingElement(BSTNode<E> rt, E element) {
+        if (rt == null) {
+            return null;
+        }
+        // Check the current node
+        if (element.compareTo(rt.value()) == 0) {
+            return rt.value();
+        }
+        // Check left subtree
+        E leftTree = findFirstMatchingElement(rt.left(), element);
+        if (leftTree != null) {
+            return leftTree;
+        }
+        // right subtree
+        return findFirstMatchingElement(rt.right(), element);
+    }
+    
+    /**
+     * Find the max node in the subtree
+     * @param rt Current node
+     * @return node with max value
+     */
+    private BSTNode<E> findMax(BSTNode<E> rt) {
+        if (rt.right() == null) {
+            return rt;
+        }
+        return findMax(rt.right());
+    }
+
 }

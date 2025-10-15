@@ -1,7 +1,7 @@
 /**
  * City class to store the data for a city record
  * @author Josh Kwen, James Son
- * @version 10/06/2025
+ * @version 10/14/2025
  */
 
 public class City implements Comparable<City> {
@@ -59,7 +59,28 @@ public class City implements Comparable<City> {
      */
     @Override
     public String toString() { // For milestone 1
-        return name + " (" + x + ", " + y + ")";    }
+        return name + " (" + x + ", " + y + ")";
+    }
+    
+    /**
+     * Check if two cities are equals
+     * @param obj The object to compare
+     * @return true if equal
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof City)) {
+            return false;
+        }
+        City other = (City) obj;
+        return this.name.equals(other.name) &&
+            this.x == other.x &&
+            this.y == other.y;
+    }
+    
     
     
 

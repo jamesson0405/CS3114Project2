@@ -2,7 +2,7 @@
  * kd tree implementation
  * 
  * @author Josh Kwen, James Son
- * @version 10/09/2025
+ * @version 10/14/2025
  */
 
 public class KDTree {
@@ -11,6 +11,7 @@ public class KDTree {
     // discriminator search keys
     private static final int X_DISCRIMINATOR = 0;
     private static final int Y_DISCRIMINATOR = 1;
+    private int nodesVisited;
 
     private static class KDNode {
         City city;
@@ -424,5 +425,183 @@ public class KDTree {
                     nodesVisited);
             }
         }
+    }
+    
+    /**
+     * Delete city at given coordinate from the KD Tree
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @return deleted city, null if not found 
+     */
+    public City delete(int x, int y) {
+        nodesVisited =0;
+        Deleted result = deleteHelper(root, x, y, 0);
+        root = result.node;
+        return result.deletedCity;
+        
+    }
+    
+    /**
+     * Helper to return deleted city and new tree
+     */
+    private static class Deleted {
+        KDNode node;
+        City deletedCity;
+        
+        Deleted(KDNode node, City deletedCity) {
+            this.node = node;
+            this.deletedCity = deletedCity;
+        }
+    }
+    
+    /**
+     * Recursive helper to delete node from tree
+     * @param rt Current node 
+     * @param x X coordinate target
+     * @param y Y coordinate target
+     * @param level Current level of tree
+     * @return deleted city
+     */
+    private Deleted deleteHelper(KDNode rt, int x, int y, int level) {
+        if (rt == null) {
+            return new Deleted(null, null);
+        }
+        nodesVisited++;
+        City curr = rt.getCity();
+        int discriminator = level % DIMENSION;
+        
+        // Check if correct node to delete
+        if (curr.getX() == x && curr.getY() == y) {
+            City deletedCity = curr;
+         // if node has right child
+            if (rt.right() != null) {
+                KDNode minNode = findMin(rt.right(), discriminator, level + 1);
+                rt.city = minNode.getCity();
+                Deleted rightTree = deleteHelper(rt.right(), minNode.getCity().getX(),
+                    minNode.getCity().getY(),
+                    level + 1);
+                rt.setRight(rightTree.node);
+                return new Deleted(rt, deletedCity);
+            }
+            // if node has left child
+            else if (rt.left() != null) {
+                rt.setRight(rt.left()); // Move left to right
+                rt.setLeft(null);
+                KDNode minNode = findMin(rt.right(), discriminator, level + 1);
+                rt.city = minNode.getCity();
+                Deleted rightTree = deleteHelper(rt.right(), minNode.getCity().getX(),
+                    minNode.getCity().getY(),
+                    level + 1);
+                rt.setRight(rightTree.node);
+                
+                return new Deleted(rt, deletedCity);
+            }
+            else {
+                return new Deleted(null, deletedCity);
+            }
+        }
+     // Continue searching if target not found
+        int currentVal;
+        int targetVal;
+        if (discriminator == X_DISCRIMINATOR) {
+            currentVal = curr.getX();
+            targetVal = x;
+        }
+        else {
+            currentVal = curr.getY();
+            targetVal = y;
+        }
+        if (targetVal < currentVal) {
+            // search through left subtree
+            Deleted leftTree = deleteHelper(rt.left(), x, y, level + 1);
+            rt.setLeft(leftTree.node);
+            return new Deleted(rt, leftTree.deletedCity);
+        }
+        else {
+            Deleted rightTree = deleteHelper(rt.right(), x, y, level + 1);
+            rt.setRight(rightTree.node);
+            return new Deleted(rt, rightTree.deletedCity);
+        }
+    }
+    
+    /**
+     * Find minimum value in given discriminator of subtree
+     * @param rt Root of the subtree
+     * @param discirminator The discriminator to find min for
+     * @param level Current level of tree
+     * @return node with minimum value
+     */
+    private KDNode findMin(KDNode rt, int discriminator, int level) {
+        if (rt == null) {
+            return null;
+        }
+        nodesVisited++;
+        int currDiscriminator = level % DIMENSION;
+        
+        if (discriminator == currDiscriminator) {
+            if (rt.left() == null) {
+                return rt;
+            }
+            return findMin(rt.left(), discriminator, level + 1);
+        }
+        else {
+            KDNode leftMin = findMin(rt.left(), discriminator, level + 1);
+            KDNode rightMin = findMin(rt.right(), discriminator, level + 1);
+            return minNode(rt, leftMin, rightMin, discriminator);
+        }
+    }
+    
+    /**
+     * Helper method to find minimum node from root, left, and right subtrees
+     * @param rt Current node
+     * @param temp1 Min from left subtree
+     * @param temp2 Min from right subtree
+     * @param discriminator Discriminator to compare
+     * @return node with minimum value
+     */
+    private KDNode minNode(KDNode rt, KDNode temp1, KDNode temp2, int discriminator) {
+        KDNode min = rt;
+        int minVal;
+        if (discriminator == X_DISCRIMINATOR) {
+            minVal = rt.getCity().getX();
+        }
+        else {
+            minVal = rt.getCity().getY();
+        }
+        if (temp1 != null) {
+            int val1;
+            if (discriminator == X_DISCRIMINATOR) {
+                val1 = temp1.getCity().getX();
+            }
+            else {
+                val1 = temp1.getCity().getY();
+            }
+            if (val1 < minVal) {
+                min = temp1;
+                minVal = val1;
+            }
+        }
+        if (temp2 != null) {
+            int val2;
+            if (discriminator == X_DISCRIMINATOR) {
+                val2 = temp2.getCity().getX();
+            }
+            else {
+                val2 = temp2.getCity().getY();
+            }
+            if (val2 < minVal) {
+                min = temp2;
+                minVal = val2;
+            }
+        }
+        return min;
+    }
+    
+    /**
+     * Get number of nodes visited
+     * @return number of nodes visited
+     */
+    public int getNodesVisited() {
+        return nodesVisited;
     }
 }

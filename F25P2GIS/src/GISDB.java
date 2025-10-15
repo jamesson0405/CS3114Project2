@@ -4,7 +4,7 @@
  * Bintree to do the work.
  *
  * @author Josh Kwen, James Son
- * @version 10/09/2025
+ * @version 10/14/2025
  *
  */
 public class GISDB implements GIS {
@@ -83,7 +83,13 @@ public class GISDB implements GIS {
      *          was deleted).
      */
     public String delete(int x, int y) {
-        return "";
+        City deletedCity = kd.delete(x,  y);
+        int nodesVisited = kd.getNodesVisited();
+        if (deletedCity == null) {
+            return nodesVisited + "\n";
+        }
+        bst.delete(deletedCity);
+        return nodesVisited + "\n" + deletedCity.getName();
     }
 
 
@@ -100,7 +106,20 @@ public class GISDB implements GIS {
      *          Print the empty string if no cites match.
      */
     public String delete(String name) {
-        return "";
+        StringBuilder str = new StringBuilder();
+        City searchCity = new City(name, 0, 0);
+        while (true) {
+            City city = (City) bst.findAndDeleteFirstElement(searchCity);
+            if (city == null) {
+                break;
+            }
+            if (str.length() > 0) {
+                str.append("\n");
+            }
+            str.append(city.getX()).append(" ").append(city.getY());
+            kd.delete(city.getX(), city.getY());
+        }
+        return str.toString();
     }
 
 
