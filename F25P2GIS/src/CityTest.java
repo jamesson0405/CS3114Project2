@@ -1,7 +1,6 @@
 import student.TestCase;
 import java.io.IOException;
 
-
 /**
  * Test class for City
  * 
@@ -25,8 +24,10 @@ public class CityTest extends TestCase {
         city4 = new City("Blacksburg", 100, 300);
     }
 
+
     /**
      * Test constructor and getters
+     * 
      * @throws IOException
      */
     public void testConstructorAndGetters() throws IOException {
@@ -35,8 +36,10 @@ public class CityTest extends TestCase {
         assertEquals(200, city1.getY());
     }
 
+
     /**
      * Test getName method
+     * 
      * @throws IOException
      */
     public void testGetName() throws IOException {
@@ -44,8 +47,10 @@ public class CityTest extends TestCase {
         assertEquals("Roanoke", city3.getName());
     }
 
+
     /**
      * Test getX method
+     * 
      * @throws IOException
      */
     public void testGetX() throws IOException {
@@ -53,8 +58,10 @@ public class CityTest extends TestCase {
         assertEquals(150, city3.getX());
     }
 
+
     /**
      * Test getY method
+     * 
      * @throws IOException
      */
     public void testGetY() throws IOException {
@@ -62,40 +69,53 @@ public class CityTest extends TestCase {
         assertEquals(250, city3.getY());
     }
 
+
     /**
      * Test compareTo with equal names
+     * 
      * @throws IOException
      */
     public void testCompareToEqual() throws IOException {
         assertEquals(0, city1.compareTo(city2));
     }
 
+
     /**
      * Test compareTo with first city less than second
+     * 
      * @throws IOException
      */
     public void testCompareToLessThan() throws IOException {
         assertTrue(city1.compareTo(city3) < 0);
     }
 
+
     /**
      * Test compareTo with first city greater than second
+     * 
      * @throws IOException
      */
     public void testCompareToGreaterThan() throws IOException {
         assertTrue(city3.compareTo(city1) > 0);
     }
 
+
     /**
      * Test compareTo with same name but different coordinates
+     * 
      * @throws IOException
      */
+
     public void testCompareToSameNameDifferentCoords() throws IOException {
-        assertFalse(city1.compareTo(city4) == 0);
+        City c1 = new City("Same", 1, 1);
+        City c2 = new City("Same", 2, 2);
+        assertEquals(0, c1.compareTo(c2));
     }
+
 
     /**
      * Test toString method
+     * 
      * @throws IOException
      */
     public void testToString() throws IOException {
@@ -103,8 +123,10 @@ public class CityTest extends TestCase {
         assertEquals("Roanoke (150, 250)", city3.toString());
     }
 
+
     /**
      * Test toString with negative coordinates
+     * 
      * @throws IOException
      */
     public void testToStringNegativeCoords() throws IOException {
@@ -112,8 +134,10 @@ public class CityTest extends TestCase {
         assertEquals("Test (-50, -100)", negCity.toString());
     }
 
+
     /**
      * Test toString with zero coordinates
+     * 
      * @throws IOException
      */
     public void testToStringZeroCoords() throws IOException {
@@ -121,16 +145,21 @@ public class CityTest extends TestCase {
         assertEquals("Origin (0, 0)", zeroCity.toString());
     }
 
+
     /**
      * Test equals with same object
+     * 
      * @throws IOException
      */
     public void testEqualsSameObject() throws IOException {
-        assertTrue(city1.equals(city1));
+        City a = new City("A", 1, 2);
+        assertTrue(a.equals(a));
     }
+
 
     /**
      * Test equals with identical cities
+     * 
      * @throws IOException
      */
     public void testEqualsIdenticalCities() throws IOException {
@@ -138,16 +167,20 @@ public class CityTest extends TestCase {
         assertTrue(city2.equals(city1));
     }
 
+
     /**
      * Test equals with different names
+     * 
      * @throws IOException
      */
     public void testEqualsDifferentNames() throws IOException {
         assertFalse(city1.equals(city3));
     }
 
+
     /**
      * Test equals with same name but different x coordinate
+     * 
      * @throws IOException
      */
     public void testEqualsDifferentX() throws IOException {
@@ -155,16 +188,20 @@ public class CityTest extends TestCase {
         assertFalse(city1.equals(differentX));
     }
 
+
     /**
      * Test equals with same name but different y coordinate
+     * 
      * @throws IOException
      */
     public void testEqualsDifferentY() throws IOException {
         assertFalse(city1.equals(city4));
     }
 
+
     /**
      * Test equals with same name and x but different y
+     * 
      * @throws IOException
      */
     public void testEqualsSameNameAndX() throws IOException {
@@ -172,16 +209,20 @@ public class CityTest extends TestCase {
         assertFalse(city1.equals(sameNameX));
     }
 
+
     /**
      * Test equals with null object
+     * 
      * @throws IOException
      */
     public void testEqualsNull() throws IOException {
         assertFalse(city1.equals(null));
     }
 
+
     /**
      * Test equals with different class object
+     * 
      * @throws IOException
      */
     public void testEqualsDifferentClass() throws IOException {
@@ -189,8 +230,10 @@ public class CityTest extends TestCase {
         assertFalse(city1.equals(notACity));
     }
 
+
     /**
      * Test equals with different class (Integer)
+     * 
      * @throws IOException
      */
     public void testEqualsDifferentClassInteger() throws IOException {
@@ -198,8 +241,10 @@ public class CityTest extends TestCase {
         assertFalse(city1.equals(notACity));
     }
 
+
     /**
      * Test with empty string name
+     * 
      * @throws IOException
      */
     public void testEmptyName() throws IOException {
@@ -208,8 +253,10 @@ public class CityTest extends TestCase {
         assertEquals(" (10, 20)", emptyName.toString());
     }
 
+
     /**
      * Test compareTo with empty strings
+     * 
      * @throws IOException
      */
     public void testCompareToEmptyString() throws IOException {
@@ -218,8 +265,10 @@ public class CityTest extends TestCase {
         assertEquals(0, empty1.compareTo(empty2));
     }
 
+
     /**
      * Test compareTo with one empty string
+     * 
      * @throws IOException
      */
     public void testCompareToOneEmpty() throws IOException {
@@ -227,4 +276,105 @@ public class CityTest extends TestCase {
         assertTrue(empty.compareTo(city1) < 0);
         assertTrue(city1.compareTo(empty) > 0);
     }
+
+
+    /**
+     * equals non city object
+     */
+    public void testEqualsNonCity() throws IOException {
+        City a = new City("A", 1, 2);
+        assertFalse(a.equals("x"));
+    }
+
+
+    /**
+     * equals compares all fields true path
+     */
+    public void testEqualsFieldsAllMatch() throws IOException {
+        City a = new City("A", 1, 2);
+        City b = new City("A", 1, 2);
+        assertTrue(a.equals(b));
+    }
+
+
+    /**
+     * equals compares all fields false name differs
+     */
+    public void testEqualsFieldsNameDiffers() throws IOException {
+        City a = new City("A", 1, 2);
+        City b = new City("B", 1, 2);
+        assertFalse(a.equals(b));
+    }
+
+
+    /**
+     * equals compares all fields false x differs
+     */
+    public void testEqualsFieldsXDiffers() throws IOException {
+        City a = new City("A", 1, 2);
+        City b = new City("A", 9, 2);
+        assertFalse(a.equals(b));
+    }
+
+
+    /**
+     * equals compares all fields false y differs
+     */
+    public void testEqualsFieldsYDiffers() throws IOException {
+        City a = new City("A", 1, 2);
+        City b = new City("A", 1, 9);
+        assertFalse(a.equals(b));
+    }
+
+
+    /**
+     * equals true when all fields equal
+     */
+    public void testEqualsAllFields() throws IOException {
+        City a = new City("K", 1, 2);
+        City b = new City("K", 1, 2);
+        assertTrue(a.equals(b));
+    }
+
+
+    /**
+     * equals false for different name or coords and non city
+     */
+    public void testEqualsNegativeCases() throws IOException {
+        City a = new City("K", 1, 2);
+        assertFalse(a.equals(new City("Q", 1, 2)));
+        assertFalse(a.equals(new City("K", 9, 2)));
+        assertFalse(a.equals("not a city"));
+    }
+
+
+    /**
+     * equals true when all fields equal
+     */
+    public void testEqualsAllFieldsEqual() throws IOException {
+        City u1 = new City("CityA", 100, 100);
+        City u2 = new City("CityA", 100, 100);
+        assertTrue(u1.equals(u2));
+    }
+
+
+    /**
+     * equals compares all fields false x differs
+     */
+    public void testEqualsFieldsXDiffersNew() throws IOException {
+        City u1 = new City("CityA", 1, 2);
+        City u2 = new City("CityA", 9, 2);
+        assertFalse(u1.equals(u2));
+    }
+
+
+    /**
+     * compareTo same name different coords returns 0 per spec
+     */
+    public void testCompareToSameNameDifferentCoordsNew() throws IOException {
+        City u1 = new City("CityA", 100, 100);
+        City u2 = new City("CityA", 999, 999);
+        assertEquals(0, u1.compareTo(u2));
+    }
+
 }
